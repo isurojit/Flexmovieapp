@@ -9,9 +9,21 @@ const global = {
 };
 
 //Highlight active Link
+const highlightActiveLink = () => {
+  const links = document.querySelectorAll(".nav-link");
+  links.forEach((link) => {
+    if (link.getAttribute("href") === global.currentPage) {
+      link.classList.add("active");
+    }
+  });
+};
 
 //init App
 const init = () => {
+  //Highlight active link
+  highlightActiveLink();
+
+  //Router Details
   switch (global.currentPage) {
     case "/index.html":
     case "/":
