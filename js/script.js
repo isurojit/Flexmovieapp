@@ -22,7 +22,7 @@ const displayPopularMovies = async () => {
   const { results } = await fetchAPIData("movie/popular");
   results.forEach((movie) => {
     const div = document.createElement("div");
-    div.classList.add = "card";
+    div.classList.add("card");
     div.innerHTML = `
     <a href="movie-details.html?id=${movie.id}">
         ${
@@ -81,6 +81,75 @@ const displayTVShows = async () => {
   });
 };
 
+//Display details
+const displayDetails = async () => {
+  const id = window.location.search.split("=")[1];
+  const movieData = await fetchAPIData(`movie/${id}`);
+
+  const div = document.createElement("div");
+  const li = document.createElement("li");
+  div.innerHTML = `
+  <div class="details-top">
+          <div>
+          ${
+            movieData.poster_path
+              ? `<img
+            src="https://image.tmdb.org/t/p/w300${movieData.poster_path}"
+            class="card-img-top"
+            alt="${movieData.title}"
+            />`
+              : `<img
+            src="images/no-image.jpg"
+            class="card-img-top"
+            alt="${movieData.title}"
+            />`
+          }
+          </div>
+          <div>
+            <h2>${movieData.title}</h2>
+            <p>
+              <i class="fas fa-star text-primary"></i>
+               ${movieData.vote_average}
+            </p>
+            <p class="text-muted">Release Date: ${movieData.release_date}</p>
+            <p>
+            ${movieData.overview}
+            </p>
+            <h5>Genres</h5>
+            <ul class="list-group">
+              ${movieData.genres
+                .map((gener) => `<li>${gener.name}</li>`)
+                .join("")}
+            </ul>
+            <a href="https://www.acrossthespiderverse.movie"" target="_blank" class="btn">Visit Movie Homepage</a>
+          </div>
+        </div>
+        <div class="details-bottom">
+          <h2>Movie Info</h2>
+          <ul>
+            <li><span class="text-secondary">Budget:</span> $${addCommasToNumbers(
+              movieData.budget
+            )}</li>
+            <li><span class="text-secondary">Revenue:</span> $${addCommasToNumbers(
+              movieData.revenue
+            )}</li>
+            <li><span class="text-secondary">Runtime:</span> ${
+              movieData.runtime
+            }</li>
+            <li><span class="text-secondary">Status:</span> ${
+              movieData.status
+            }</li>
+          </ul>
+          <h4>Production Companies</h4>
+          <div class="list-group">${movieData.production_companies.map(
+            (company) => ` <span>${company.name}</span>`
+          )}</div>
+        </div>
+  `;
+  document.querySelector("#movie-details").appendChild(div);
+  console.log(movieData);
+};
+
 //Fetch data from TMDB API
 const fetchAPIData = async (endpoint) => {
   const API_URL = "https://api.themoviedb.org/3/";
@@ -104,6 +173,12 @@ const showSpinner = () => {
 const hideSpinner = () => {
   document.querySelector(".spinner").classList.remove("show");
 };
+
+//Add commas to numbers
+const addCommasToNumbers = (number) => {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 //init App
 const init = () => {
   //Highlight active link
@@ -119,7 +194,7 @@ const init = () => {
       displayTVShows();
       break;
     case "/movie-details.html":
-      console.log("Movies");
+      displayDetails();
       break;
     case "/tv-details.html":
       console.log("Shows");
