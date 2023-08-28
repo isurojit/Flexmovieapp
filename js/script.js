@@ -18,6 +18,7 @@ const highlightActiveLink = () => {
   });
 };
 
+//Display Movie
 const displayPopularMovies = async () => {
   const { results } = await fetchAPIData("movie/popular");
   results.forEach((movie) => {
@@ -47,7 +48,6 @@ const displayPopularMovies = async () => {
   </div>`;
     document.querySelector("#popular-movies").appendChild(div);
   });
-  console.log(results[0]);
 };
 
 const displayTVShows = async () => {
@@ -86,8 +86,10 @@ const displayDetails = async () => {
   const id = window.location.search.split("=")[1];
   const movieData = await fetchAPIData(`movie/${id}`);
 
+  //Overlay For Background Image
+  displayBgImg("movie", movieData.backdrop_path);
+
   const div = document.createElement("div");
-  const li = document.createElement("li");
   div.innerHTML = `
   <div class="details-top">
           <div>
@@ -121,7 +123,9 @@ const displayDetails = async () => {
                 .map((gener) => `<li>${gener.name}</li>`)
                 .join("")}
             </ul>
-            <a href="https://www.acrossthespiderverse.movie"" target="_blank" class="btn">Visit Movie Homepage</a>
+            <a href="${
+              movieData.homepage
+            }" target="_blank" class="btn">Visit Movie Homepage</a>
           </div>
         </div>
         <div class="details-bottom">
@@ -147,7 +151,101 @@ const displayDetails = async () => {
         </div>
   `;
   document.querySelector("#movie-details").appendChild(div);
-  console.log(movieData);
+};
+
+//Tv details
+const tvDetails = async () => {
+  const id = window.location.search.split("=")[1];
+  const tvData = await fetchAPIData(`tv/${id}`);
+
+  //Overlay For Background Image
+  displayBgImg("tv", tvData.backdrop_path);
+
+  const div = document.createElement("div");
+  div.innerHTML = `
+  <div class="details-top">
+          <div>
+          ${
+            tvData.poster_path
+              ? `<img
+            src="https://image.tmdb.org/t/p/w300${tvData.poster_path}"
+            class="card-img-top"
+            alt="${tvData.name}"
+            />`
+              : `<img
+            src="images/no-image.jpg"
+            class="card-img-top"
+            alt="${tvData.name}"
+            />`
+          }
+          </div>
+          <div>
+            <h2>${tvData.name}</h2>
+            <p>
+              <i class="fas fa-star text-primary"></i>
+              ${Math.round(tvData.vote_average)}
+            </p>
+            <p class="text-muted">Release Date: ${tvData.first_air_date}</p>
+            <p>${tvData.overview}</p>
+            <h5>Genres</h5>
+            <ul class="list-group">
+              ${tvData.genres.map((gener) => `<li>${gener.name}</li>`).join("")}
+            </ul>
+            <a href="${
+              tvData.homepage
+            }" target="_blank" class="btn">Visit Show Homepage</a>
+          </div>
+        </div>
+        <div class="details-bottom">
+          <h2>Show Info</h2>
+          <ul>
+            <li><span class="text-secondary">Number Of Episodes: </span> ${
+              tvData.number_of_episodes
+            }</li>
+            <li>
+              <span class="text-secondary">Last Episode Air Date: </span> ${
+                tvData.last_episode_to_air.air_date
+              }
+            </li>
+            <li>
+              <span class="text-secondary">Last Episode To Air: </span>${
+                tvData.last_episode_to_air.name
+              } 
+            </li>
+            <li><span class="text-secondary">Status: </span> ${
+              tvData.status
+            }</li>
+          </ul>
+          <h4>Production Companies</h4>
+          <div class="list-group">${tvData.production_companies
+            .map((company) => `<span>${company.name}</span>, `)
+            .join("")}</div>
+        </div>
+  `;
+  document.querySelector("#show-details").appendChild(div);
+  console.log(tvData);
+};
+
+//Display backdrop On Details Pages
+const displayBgImg = (type, bgPath) => {
+  const overlayDiv = document.createElement("div");
+  overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${bgPath})`;
+  console.log(`https://image.tmdb.org/t/p/original/${bgPath}`);
+  overlayDiv.style.backgroundSize = "cover";
+  overlayDiv.style.backgroundPosition = "no-repeat";
+  overlayDiv.style.height = "100vh";
+  overlayDiv.style.width = "100vw";
+  overlayDiv.style.position = "absolute";
+  overlayDiv.style.top = "0";
+  overlayDiv.style.left = "0";
+  overlayDiv.style.zIndex = "-1";
+  overlayDiv.style.opacity = "0.1";
+
+  if (type === "movie") {
+    document.querySelector("#movie-details").appendChild(overlayDiv);
+  } else {
+    document.querySelector("#show-details").appendChild(overlayDiv);
+  }
 };
 
 //Fetch data from TMDB API
@@ -155,7 +253,7 @@ const fetchAPIData = async (endpoint) => {
   const API_URL = "https://api.themoviedb.org/3/";
   showSpinner();
   const response = await fetch(
-    `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US&watch_region=US`
+    `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US`
   );
   const data = await response.json();
   setTimeout(function () {
@@ -197,6 +295,7 @@ const init = () => {
       displayDetails();
       break;
     case "/tv-details.html":
+      tvDetails();
       console.log("Shows");
       break;
     case "/search.html":
