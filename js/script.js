@@ -6,6 +6,12 @@ const API_KEY = "6c2db7fb9f0fd81eaf038850b96d602e";
 //Golbal Path Level
 const global = {
   currentPage: window.location.pathname,
+  search: {
+    term: "",
+    type: "",
+    page: 1,
+    totalPages: 1,
+  },
 };
 
 //Highlight active Link
@@ -29,7 +35,7 @@ const displayPopularMovies = async () => {
         ${
           movie.poster_path
             ? `<img
-            src="https://image.tmdb.org/t/p/w300${movie.poster_path}"
+            src="https://image.tmdb.org/t/p/w780${movie.poster_path}"
             class="card-img-top"
             alt="Movie Title"
             />`
@@ -60,7 +66,7 @@ const displayTVShows = async () => {
     ${
       tvShows.poster_path
         ? `<img
-        src="https://image.tmdb.org/t/p/w300${tvShows.poster_path}"
+        src="https://image.tmdb.org/t/p/w780${tvShows.poster_path}"
         class="card-img-top"
         alt="Movie Title"
         />`
@@ -96,7 +102,7 @@ const displayDetails = async () => {
           ${
             movieData.poster_path
               ? `<img
-            src="https://image.tmdb.org/t/p/w300${movieData.poster_path}"
+            src="https://image.tmdb.org/t/p/w780${movieData.poster_path}"
             class="card-img-top"
             alt="${movieData.title}"
             />`
@@ -168,7 +174,7 @@ const tvDetails = async () => {
           ${
             tvData.poster_path
               ? `<img
-            src="https://image.tmdb.org/t/p/w300${tvData.poster_path}"
+            src="https://image.tmdb.org/t/p/w780${tvData.poster_path}"
             class="card-img-top"
             alt="${tvData.name}"
             />`
@@ -223,14 +229,12 @@ const tvDetails = async () => {
         </div>
   `;
   document.querySelector("#show-details").appendChild(div);
-  console.log(tvData);
 };
 
 //Display backdrop On Details Pages
 const displayBgImg = (type, bgPath) => {
   const overlayDiv = document.createElement("div");
   overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${bgPath})`;
-  console.log(`https://image.tmdb.org/t/p/original/${bgPath}`);
   overlayDiv.style.backgroundSize = "cover";
   overlayDiv.style.backgroundPosition = "no-repeat";
   overlayDiv.style.height = "100vh";
@@ -246,6 +250,61 @@ const displayBgImg = (type, bgPath) => {
   } else {
     document.querySelector("#show-details").appendChild(overlayDiv);
   }
+};
+
+const search = async () => {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+};
+//Display Slider Movie
+const displaySlider = async () => {
+  const { results } = await fetchAPIData("movie/now_playing");
+
+  results.forEach((movie) => {
+    const div = document.createElement("div");
+    div.classList.add("swiper-slide");
+
+    div.innerHTML = `
+      <a href="movie-details.html?id=${movie.id}">
+        <img src="https://image.tmdb.org/t/p/w780${movie.poster_path}" alt="${movie.title}" />
+      </a>
+      <h4 class="swiper-rating">
+        <i class="fas fa-star text-secondary"></i> ${movie.vote_average} / 10
+      </h4>
+    `;
+
+    document.querySelector(".swiper-wrapper").appendChild(div);
+
+    initSwiper();
+  });
+};
+
+const initSwiper = () => {
+  const swiper = new Swiper(".swiper", {
+    a11y: {
+      prevSlideMessage: "Previous slide",
+      nextSlideMessage: "Next slide",
+    },
+    slidesPerView: 1,
+    spaceBetween: 30,
+    freeMode: true,
+    loop: true,
+    autoplay: {
+      delay: 4000,
+      disableOnInteraction: false,
+    },
+    breakpoints: {
+      500: {
+        slidesPerView: 2,
+      },
+      700: {
+        slidesPerView: 3,
+      },
+      1200: {
+        slidesPerView: 4,
+      },
+    },
+  });
 };
 
 //Fetch data from TMDB API
@@ -286,6 +345,7 @@ const init = () => {
   switch (global.currentPage) {
     case "/index.html":
     case "/":
+      displaySlider();
       displayPopularMovies();
       break;
     case "/shows.html":
@@ -296,10 +356,9 @@ const init = () => {
       break;
     case "/tv-details.html":
       tvDetails();
-      console.log("Shows");
       break;
     case "/search.html":
-      console.log("Search");
+      search();
       break;
   }
 };
