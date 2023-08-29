@@ -255,7 +255,17 @@ const displayBgImg = (type, bgPath) => {
 const search = async () => {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
+  global.search.type = urlParams.get("type");
+  global.search.term = urlParams.get("search-term");
+  if (global.search.term !== "" && global.search.term !== null) {
+    //todo- make request and display result
+    const results = await searchAPIData();
+    console.log(results);
+  } else {
+    showAlert("Please enter a search term");
+  }
 };
+
 //Display Slider Movie
 const displaySlider = async () => {
   const { results } = await fetchAPIData("movie/now_playing");
@@ -321,6 +331,20 @@ const fetchAPIData = async (endpoint) => {
   return data;
 };
 
+//Search Api Data
+const searchAPIData = async () => {
+  const API_URL = "https://api.themoviedb.org/3/";
+  showSpinner();
+  const response = await fetch(
+    `${API_URL}search/${global.search.type}?api_key=${API_KEY}&language=en-US&query=${global.search.term}`
+  );
+  const data = await response.json();
+  setTimeout(function () {
+    hideSpinner();
+  }, 500);
+  return data;
+};
+
 //Show Spinner
 const showSpinner = () => {
   document.querySelector(".spinner").classList.add("show");
@@ -334,6 +358,17 @@ const hideSpinner = () => {
 //Add commas to numbers
 const addCommasToNumbers = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+//Show Alert
+const showAlert = (msg, classname) => {
+  const alertEl = document.createElement("div");
+  alertEl.classList.add("alert", classname);
+  alertEl.appendChild(document.createTextNode(msg));
+  document.querySelector("#alert").appendChild(alertEl);
+  setTimeout(() => {
+    alertEl.remove();
+  }, 2000);
 };
 
 //init App
