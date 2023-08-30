@@ -11,6 +11,7 @@ const global = {
     type: "",
     page: 1,
     totalPages: 1,
+    totalResults: 0,
   },
 };
 
@@ -260,7 +261,12 @@ const search = async () => {
   global.search.term = urlParams.get("search-term");
   if (global.search.term !== "" && global.search.term !== null) {
     //todo- make request and display result
-    const { results, total_pages, total_results } = await searchAPIData();
+    const { results, total_pages, total_results, page } = await searchAPIData();
+    console.log(total_results);
+    global.search.page = page;
+    global.search.totalPages = total_pages;
+    global.search.totalResults = total_results;
+
     if (results.length === 0) {
       showAlert("No Results Found");
     }
@@ -304,6 +310,9 @@ const displaySearchResults = (results) => {
         }</small>
       </p>
     </div>`;
+    document.querySelector("#search-results-heading").innerHTML = `
+      <h2>${results.length} of ${global.search.totalResults} Results for ${global.search.term}</h2>
+    `;
     document.querySelector("#search-results").appendChild(div);
   });
 };
@@ -324,7 +333,6 @@ const displaySlider = async () => {
         <i class="fas fa-star text-secondary"></i> ${movie.vote_average} / 10
       </h4>
     `;
-
     document.querySelector(".swiper-wrapper").appendChild(div);
 
     initSwiper();
