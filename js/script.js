@@ -252,6 +252,7 @@ const displayBgImg = (type, bgPath) => {
   }
 };
 
+//Search Data
 const search = async () => {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
@@ -259,11 +260,52 @@ const search = async () => {
   global.search.term = urlParams.get("search-term");
   if (global.search.term !== "" && global.search.term !== null) {
     //todo- make request and display result
-    const results = await searchAPIData();
-    console.log(results);
+    const { results, total_pages, total_results } = await searchAPIData();
+    if (results.length === 0) {
+      showAlert("No Results Found");
+    }
+    displaySearchResults(results);
+    document.querySelector("#search-term").value = "";
   } else {
     showAlert("Please enter a search term");
   }
+};
+
+//Display search results
+const displaySearchResults = (results) => {
+  results.forEach((result) => {
+    const div = document.createElement("div");
+    div.classList.add("card");
+    div.innerHTML = `
+    <a href="${global.search.type}-details.html?id=${result.id}">
+    ${
+      result.poster_path
+        ? `<img
+        src="https://image.tmdb.org/t/p/w780${result.poster_path}"
+        class="card-img-top"
+        alt="${global.search.type === "movie" ? result.title : result.name}"
+        />`
+        : `<img
+        src="images/no-image.jpg"
+        class="card-img-top"
+        alt="${global.search.type === "movie" ? result.title : result.name}"
+        />`
+    }
+    </a>
+    <div class="card-body">
+      <h5 class="card-title">${
+        global.search.type === "movie" ? result.title : result.name
+      }</h5>
+      <p class="card-text">
+        <small class="text-muted">Aired: ${
+          global.search.type === "movie"
+            ? result.release_date
+            : result.first_air_date
+        }</small>
+      </p>
+    </div>`;
+    document.querySelector("#search-results").appendChild(div);
+  });
 };
 
 //Display Slider Movie
@@ -361,7 +403,7 @@ const addCommasToNumbers = (number) => {
 };
 
 //Show Alert
-const showAlert = (msg, classname) => {
+const showAlert = (msg, classname = "error") => {
   const alertEl = document.createElement("div");
   alertEl.classList.add("alert", classname);
   alertEl.appendChild(document.createTextNode(msg));
